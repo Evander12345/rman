@@ -10,6 +10,4 @@ edition = "2018"
 async-ssh = "0.1.2"
 serde = {version = "1.0.104", features = ["derive"] }
 serde_derive = "1.0.104"
-#itconfig = "0.11.2"
 config = "0.9"
-lazy_static = "1.4.0"
