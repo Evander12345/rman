@@ -1,13 +1,16 @@
 //! Provides the `Host` struct as well as some functions to interact utilize them.
 use crate::help;
 extern crate serde_derive;
-use config::Config;
+extern crate dirs;
 
+use config::Config;
 use serde_derive::{Serialize, Deserialize};
 use std::error::Error;
 use std::fs::File;
+use std::env;
 use std::io::prelude::*;
 use std::path::Path;
+use std::path::PathBuf;
 
 /// Struct to store host data in aggregate while in mem.
 /// # Examples
@@ -58,8 +61,9 @@ pub fn base(args: std::vec::Vec<String>) {
 }
 
 fn list_hosts() {
-    for host in get_hosts() {
+    for host in get_hosts().iter() {
         dbg!(host);
+        //println!("Host Alias : {}\nHost IP : {}\nHost SSHUser : {}\nHost PK Path : {}\nHost Desc. : {}\n", host.alias, host.ip, host.ssh_user, host.pk_path, host.description);
     }
 }
 
@@ -133,8 +137,13 @@ fn save_host(to_save: Host) {
 }
 
 fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
+    let mut path = match dirs::home_dir() {
+        Some(T) => T,
+        _ => panic!("Error"),
+    };
+    path.push(Path::new("./config/rman/rman.toml"));
     // Open the config file.
-    let mut save_file = File::create(Path::new("/home/evan/.config/rman/rman.toml"))?;
+    let mut save_file = File::create(path)?;
     // Write bundled host values into the file...
     let hosts = bundle_hosts(configuration);
     save_file.write_all(format!("alias = '{}'\nip = '{}'\nssh_user = '{}'\npk_path = '{}'\ndescription = '{}'", hosts.aliases, hosts.ips, hosts.ssh_users, hosts.pk_paths, hosts.descriptions).into_bytes().as_ref())?;
@@ -178,9 +187,14 @@ fn bundle_hosts(to_hosts: std::vec::Vec<Host>) -> Hosts {
 /// Loads hosts from the config file and into a `Vec<Host>`
 /// # Examples
 /// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
-fn get_hosts() -> Result<std::vec::Vec<Host>, Box<Error>> {
+fn get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
     let mut settings = Config::new();
-    settings.merge(config::File::with_name("/home/evan/.config/rman/rman.toml"));
+    let mut path = match dirs::home_dir() {
+        Some(T) => T,
+        _ => panic!("Error"),
+    };
+    path.push(Path::new("./config/rman/rman.toml"));
+    settings.merge(config::File::from(path));
 
     let aliases: std::vec::Vec<String> = to_string_vec(settings.get::<String>("alias")?.split("|").collect());
     let ips: std::vec::Vec<String> = to_string_vec(settings.get::<String>("ip")?.split("|").collect());

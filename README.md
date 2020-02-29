@@ -1,6 +1,6 @@
-#rman - **R**ust Server **Man**ager - A simple server management tool written in Rust.
+# rman - **R**ust Server **Man**ager - A simple server management tool written in Rust.
 
-##Installation
+## Installation
 Install can be completed by first running
 
 `$git clone https://github.com/Evander12345/rman`
@@ -11,7 +11,7 @@ followed by
 
 and lastly
  
- `$sudo cargo install --path /path/to/your/binaries`
+`$sudo cargo install --path /path/to/your/binaries`
  
- ##Usage
- This is a work in progress, and thus has no functionality yet.
+## Usage
+This is a work in progress, and thus has no functionality yet.
