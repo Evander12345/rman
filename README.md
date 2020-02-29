@@ -1,7 +1,7 @@
-# rman - **R**ust Server **Man**ager - A simple server management tool written in Rust.
+# rman - A simple server management tool written in Rust.
 
 ## Installation
-Install can be completed by first running
+**R**ust Server **Man**ager can be installed by runnning the following commands.
 
 `$git clone https://github.com/Evander12345/rman`
 
