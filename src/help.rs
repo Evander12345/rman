@@ -1,18 +1,18 @@
-// The <help> module is used to display tips for using rman to stdout
+//! The <help> module is used to display tips for using rman to stdout.
 
+/// This function handles all "$rman help" commands.
 pub fn base(args: Vec<String>) {
     if args.len() < 2 {
         // If the user does not specify a particular command to receive help with then print the general help message.
-        println!("rman usage:\n{}\n{}\n{}\n{}",
+        println!("rman usage:\n{}\n{}\n{}",
                  "$rman status [args]\tdisplay some info, see\"$rman help status\" for more details...",
                  "$rman host [args] \tinteract with hosts, see \"$rman help host\" for more details...",
                  "$rman all [args] \tinteract with all hosts, see \"$rman help all\" for more details...",
-                 "",
         );
     }
     else {
         // If the user specifies a command, display the help message for that command
-        let cmd: &str = &args[2];
+        let cmd: &str = &args[1];
         match cmd {
             "status" => status(),   // Display status command help
             "host" => host(),       // Display host command help
@@ -22,14 +22,14 @@ pub fn base(args: Vec<String>) {
     }
 }
 
-// Status command help message
-fn status() {
-    println!("\nrman status usage:\n{}",
+/// Status command help message, displays "$rman status" help page to stdout.
+pub fn status() {
+    println!("rman status usage:\n{}",
              "$rman status\tdisplays some general status information",
     );
 }
 
-// Host command help message
+/// Host command help message, displays "$rman host" help page to stdout.
 pub fn host() {
     println!("rman host usage:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
              "$rman host ls\tprints the host list and whether the host is up or not",
@@ -43,9 +43,9 @@ pub fn host() {
     );
 }
 
-// All command help message
+/// Host command help message, displays "$rman all" help page to stdout.
 fn all() {
-    println!("\nrman all usage:\n{}",
-             "$rman all status\tdisplays detailed status view of all hosts",
+    println!("rman all usage:\n{}",
+             "$rman all status\tdisplays a status view of all hosts",
     );
 }
