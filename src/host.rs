@@ -62,8 +62,7 @@ pub fn base(args: std::vec::Vec<String>) {
 
 fn list_hosts() {
     for host in get_hosts().iter() {
-        dbg!(host);
-        //println!("Host Alias : {}\nHost IP : {}\nHost SSHUser : {}\nHost PK Path : {}\nHost Desc. : {}\n", host.alias, host.ip, host.ssh_user, host.pk_path, host.description);
+        println!("Host Alias : {}\nHost IP : {}\nHost SSHUser : {}\nHost PK Path : {}\nHost Desc. : {}\n", host.alias, host.ip, host.ssh_user, host.pk_path, host.description);
     }
 }
 
@@ -71,13 +70,25 @@ fn list_hosts() {
 fn rm_host_runner(args: std::vec::Vec<String>) {
     // If the user has specified an alias to be removed then run the rm_host function with that alias. Else, display host help.
     match args.len() {
-        3 => rm_host(String::from(&args[2])),
+        4 => rm_host(String::from(&args[3])),
         _ => help::host(),
     }
 }
 
 fn rm_host(rm_alias: String) {
-    // TODO: Implement host erasing by alias...
+    let mut hosts = get_hosts();
+    let mut rm_indice:i32 = -1;
+    for i in 0..hosts.len() {
+        if hosts[i].alias == rm_alias {
+            rm_indice = i as i32;
+        }
+    }
+    if rm_indice == -1 {
+        println!("Host not found");
+    } else {
+        hosts.remove(rm_indice as usize);
+        println!("{:?}", try_save(hosts));
+    }
 }
 
 // Runs save_host(<Host>)
@@ -114,10 +125,7 @@ fn save_host_runner(args: std::vec::Vec<String>) {
 /// This function writes a `Host` into the config file
 fn save_host(to_save: Host) {
     // Load config into mem in the form of Vec<Host>
-    let mut configuration = match get_hosts() {
-        Ok(Result) => Result,
-        Err(E) => panic!("Error getting hosts.")
-    };
+    let mut configuration = get_hosts();
 
     // Check to see if the host already exists before saving it again.
     let mut exists: bool = false;
@@ -141,7 +149,7 @@ fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
         Some(T) => T,
         _ => panic!("Error"),
     };
-    path.push(Path::new("./config/rman/rman.toml"));
+    path.push(Path::new(".config/rman/rman.toml"));
     // Open the config file.
     let mut save_file = File::create(path)?;
     // Write bundled host values into the file...
@@ -184,16 +192,14 @@ fn bundle_hosts(to_hosts: std::vec::Vec<Host>) -> Hosts {
     }
 }
 
-/// Loads hosts from the config file and into a `Vec<Host>`
-/// # Examples
-/// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
-fn get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
+// Attempts to get hosts from the configuration file.
+fn try_get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
     let mut settings = Config::new();
     let mut path = match dirs::home_dir() {
         Some(T) => T,
         _ => panic!("Error"),
     };
-    path.push(Path::new("./config/rman/rman.toml"));
+    path.push(Path::new(".config/rman/rman.toml"));
     settings.merge(config::File::from(path));
 
     let aliases: std::vec::Vec<String> = to_string_vec(settings.get::<String>("alias")?.split("|").collect());
@@ -213,6 +219,16 @@ fn get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
         });
     }
     Ok(r_hosts)
+}
+
+/// Loads hosts from the config file and into a `Vec<Host>`
+/// # Examples
+/// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
+pub fn get_hosts() -> std::vec::Vec<Host> {
+    match try_get_hosts() {
+        Ok(Result) => Result,
+        Err(E) => panic!("Couldn't get hosts from config! {}", E)
+    }
 }
 
 // Converts a vec<str> to a vec<String>
