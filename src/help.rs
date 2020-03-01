@@ -38,14 +38,15 @@ pub fn host() {
              "$rman host status [host]\tdisplays a detailed status view of a host",
              "$rman host reboot [host]\treboots the host",
              "$rman host shutdown [host]\tshutdowns the host",
-             "$rman host exec [host-alias] [cmd] [...] [cmd]\t execute an arbitrary command on the host.",
+             "$rman host exec [host-alias] [cmd]\t execute an arbitrary command on the host.",
              "* denotes an optional argument."
     );
 }
 
 /// Host command help message, displays "$rman all" help page to stdout.
-fn all() {
-    println!("rman all usage:\n{}",
+pub fn all() {
+    println!("rman all usage:\n{}\n{}",
              "$rman all status\tdisplays a status view of all hosts",
+             "$rman all exec [cmd]\texecutes a command on all remote hosts",
     );
 }

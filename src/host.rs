@@ -8,10 +8,8 @@ use config::Config;
 use serde_derive::{Serialize, Deserialize};
 use std::error::Error;
 use std::fs::File;
-use std::env;
 use std::io::prelude::*;
 use std::path::Path;
-use std::path::PathBuf;
 
 /// Struct to store host data in aggregate while in mem.
 /// # Examples
@@ -50,7 +48,7 @@ pub fn base(args: std::vec::Vec<String>) {
     else {
         // If the user specifies a command, execute that command
         let cmd: &str = &args[2];
-        println!("{}", cmd);
+        //println!("{}", cmd);
         match cmd {                             // Run various commands based on user input...
             //"status" => host_status(),        // host "status"
             "add" => save_host_runner(args),    // host "add"
@@ -63,6 +61,7 @@ pub fn base(args: std::vec::Vec<String>) {
 }
 
 fn run_host_cmd(args: std::vec::Vec<String>) {
+    // Assemble command
     let mut cmd = String::new();
     if args.len() < 5 {
         help::host();
@@ -71,9 +70,10 @@ fn run_host_cmd(args: std::vec::Vec<String>) {
             cmd.push_str(format!("{} ", args[i]).as_str());
         }
     }
-    println!("{}", ssh_con::execute_remote_command(get_host_by_alias((args[3]).parse().unwrap()), cmd))
+    println!("{}", ssh_con::execute_remote_command(&get_host_by_alias((args[3]).parse().unwrap()), &cmd))
 }
 
+/// Lists hosts
 fn list_hosts() {
     for host in get_hosts().iter() {
         println!("Host Alias : {}\nHost IP : {}\nHost SSHUser : {}\nHost PK Path : {}\nHost Desc. : {}\n", host.alias, host.ip, host.ssh_user, host.pk_path, host.description);
@@ -160,7 +160,7 @@ fn save_host(to_save: Host) {
 
 fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
     let mut path = match dirs::home_dir() {
-        Some(T) => T,
+        Some(buf) => buf,
         _ => panic!("Error getting home directory"),
     };
     path.push(Path::new(".config/rman/rman.toml"));
@@ -210,7 +210,7 @@ fn bundle_hosts(to_hosts: std::vec::Vec<Host>) -> Hosts {
 fn try_get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
     let mut settings = Config::new();
     let mut path = match dirs::home_dir() {
-        Some(T) => T,
+        Some(buf) => buf,
         _ => panic!("Error"),
     };
     path.push(Path::new(".config/rman/rman.toml"));
@@ -240,8 +240,8 @@ fn try_get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
 /// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
 pub fn get_hosts() -> std::vec::Vec<Host> {
     match try_get_hosts() {
-        Ok(Result) => Result,
-        Err(E) => panic!("Couldn't get hosts from config! {}", E)
+        Ok(result) => result,
+        Err(err) => panic!("Couldn't get hosts from config! {}", err)
     }
 }
 
