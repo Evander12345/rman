@@ -1,6 +1,7 @@
 //! Provides CLI entry into rman.
 mod help;
 mod host;
+mod ssh_con;
 extern crate config;
 
 // Imports

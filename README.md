@@ -6,12 +6,11 @@
 `$git clone https://github.com/Evander12345/rman`
 
 followed by
-
-`$cd rman` 
-
-and lastly
  
-`$sudo cargo install --path /path/to/your/binaries`
+`$sudo cargo install --path=rman`
  
 ## Usage
-This is a work in progress, and thus has no functionality yet.
+Currently supported commands:
+
+rman host <add, del, ls>
+rman help <host, all, status>

@@ -1,4 +1,4 @@
-//! The <help> module is used to display tips for using rman to stdout.
+//! Provides CLI help pages for interacting with rman
 
 /// This function handles all "$rman help" commands.
 pub fn base(args: Vec<String>) {
@@ -38,7 +38,7 @@ pub fn host() {
              "$rman host status [host]\tdisplays a detailed status view of a host",
              "$rman host reboot [host]\treboots the host",
              "$rman host shutdown [host]\tshutdowns the host",
-             "$rman host exec [host] [cmd]\t execute an arbitrary command on the host.",
+             "$rman host exec [host-alias] [cmd] [...] [cmd]\t execute an arbitrary command on the host.",
              "* denotes an optional argument."
     );
 }

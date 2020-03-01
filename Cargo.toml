@@ -1,14 +1,14 @@
 [package]
 name = "rman"
 version = "0.1.0"
-authors = ["Evan Older <evan.older@gmail.com>"]
+authors = ["Evan Older <evanmolder@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-ssh = "0.1.2"
-serde = {version = "1.0.104", features = ["derive"] }
-serde_derive = "1.0.104"
 config = "0.9"
 dirs = "2.0.2"
+serde = {version = "1.0.104", features = ["derive"] }
+serde_derive = "1.0.104"
+ssh = "0.1.4"

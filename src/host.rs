@@ -1,5 +1,6 @@
 //! Provides the `Host` struct as well as some functions to interact utilize them.
 use crate::help;
+use crate::ssh_con;
 extern crate serde_derive;
 extern crate dirs;
 
@@ -49,15 +50,28 @@ pub fn base(args: std::vec::Vec<String>) {
     else {
         // If the user specifies a command, execute that command
         let cmd: &str = &args[2];
-        //println!("{}", cmd);
+        println!("{}", cmd);
         match cmd {                             // Run various commands based on user input...
             //"status" => host_status(),        // host "status"
             "add" => save_host_runner(args),    // host "add"
             "del" => rm_host_runner(args),      // host "del"
             "ls" => list_hosts(),               // host "ls"
+            "exec" => run_host_cmd(args),       // host "exec"
             _ => help::host()                   // If the user typed something wrong then display the host help message
         }
     }
+}
+
+fn run_host_cmd(args: std::vec::Vec<String>) {
+    let mut cmd = String::new();
+    if args.len() < 5 {
+        help::host();
+    } else {
+        for i in 4..args.len() {
+            cmd.push_str(format!("{} ", args[i]).as_str());
+        }
+    }
+    println!("{}", ssh_con::execute_remote_command(get_host_by_alias((args[3]).parse().unwrap()), cmd))
 }
 
 fn list_hosts() {
@@ -147,7 +161,7 @@ fn save_host(to_save: Host) {
 fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
     let mut path = match dirs::home_dir() {
         Some(T) => T,
-        _ => panic!("Error"),
+        _ => panic!("Error getting home directory"),
     };
     path.push(Path::new(".config/rman/rman.toml"));
     // Open the config file.
@@ -228,6 +242,24 @@ pub fn get_hosts() -> std::vec::Vec<Host> {
     match try_get_hosts() {
         Ok(Result) => Result,
         Err(E) => panic!("Couldn't get hosts from config! {}", E)
+    }
+}
+
+pub fn get_host_by_alias(alias: String) -> Host {
+    let hosts = get_hosts();
+    let mut r_host: Host = Default::default();
+    // Check to see if the host exists
+    let mut exists: bool = false;
+    for host in hosts.iter() {
+        if alias == host.alias {
+            exists = true;
+            r_host = host.clone();
+        }
+    }
+    if exists {
+        r_host
+    } else {
+        panic!("Host not found.");
     }
 }
 
