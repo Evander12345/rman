@@ -31,8 +31,8 @@ fn exec_cmd(args: std::vec::Vec<String>) {
         for i in 3..args.len() {
             cmd.push_str(format!("{} ", args[i]).as_str());
         }
+        run_host_cmd(cmd);
     }
-    run_host_cmd(cmd);
 }
 
 fn run_host_cmd(cmd: String) {

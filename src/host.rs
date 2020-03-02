@@ -63,14 +63,14 @@ pub fn base(args: std::vec::Vec<String>) {
 fn run_host_cmd(args: std::vec::Vec<String>) {
     // Assemble command
     let mut cmd = String::new();
-    if args.len() < 5 {
+    if args.len() < 4 {
         help::host();
     } else {
         for i in 4..args.len() {
             cmd.push_str(format!("{} ", args[i]).as_str());
         }
+        println!("{}", ssh_con::execute_remote_command(&get_host_by_alias((args[3]).parse().unwrap()), &cmd))
     }
-    println!("{}", ssh_con::execute_remote_command(&get_host_by_alias((args[3]).parse().unwrap()), &cmd))
 }
 
 /// Lists hosts
