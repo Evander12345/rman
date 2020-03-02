@@ -3,7 +3,7 @@
 ## Installation
 **R**ust Server **Man**ager can be installed by running the following commands.
 
-`$git clone https://github.com/Evander12345/rman`
+`$git clone https://github.com/Evander12345/rman.git`
 
 followed by
  
