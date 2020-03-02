@@ -2,7 +2,8 @@
 
 use crate::help;
 use crate::host;
-use crate::ssh_con::execute_remote_command;
+use crate::ssh_con::{execute_remote_command, check_host};
+use crate::host::{get_hosts, Host};
 
 /// This function handles all `$rman host` commands.
 pub fn base(args: std::vec::Vec<String>) {
@@ -43,4 +44,15 @@ fn run_host_cmd(cmd: String) {
         print_string.push_str(format!("{}:\n{}\n", &host.alias, execute_remote_command(&host, &cmd)).as_str());
     }
     print!("{}", print_string);
+}
+
+pub fn check_up_hosts() -> i32 {
+    let mut num_of_hosts = 0;
+    let hosts = get_hosts();
+    for host in hosts.iter() {
+        if check_host(host) {
+            num_of_hosts += 1;
+        }
+    }
+    num_of_hosts
 }

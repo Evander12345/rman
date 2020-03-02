@@ -41,3 +41,21 @@ pub fn execute_remote_command(host: &host::Host, remote_cmd: &String) -> String 
         String::from("Host cannot be reached.")
     }
 }
+
+pub fn check_host(host: &host::Host) -> bool {
+    // Attempt to connect to the remote host...
+    let mut session=Session::new().unwrap();
+    session.set_host(host.ip.as_str()).unwrap();
+    session.set_username(host.ssh_user.as_str()).unwrap();
+    session.set_identity(Path::new(host.pk_path.as_str())).unwrap();
+    let mut connected = false;
+    let mut count: u8 = 0;
+    while !connected || count > 2 {
+        match session.connect() {
+            Ok(_) => connected = true,
+            Err(_) => count += 1 // Increment connection timeout counter...
+        }
+    }
+    std::mem::drop(session);
+    connected
+}

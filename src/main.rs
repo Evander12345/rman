@@ -32,5 +32,6 @@ fn main() {
 
 fn show_status() {
     let hosts = host::get_hosts();
-    println!("Number of registered hosts: {}", hosts.len())
+    println!("Number of registered hosts: {}", hosts.len());
+    println!("Number of reachable hosts: {}", all::check_up_hosts());
 }
