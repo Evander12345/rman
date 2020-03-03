@@ -22,8 +22,23 @@ pub fn execute_remote_command(host: &host::Host, remote_cmd: &String) -> String 
         }
     }
     if connected {
-        //println!("{:?}",session.is_server_known());
-        session.userauth_publickey_auto(None).unwrap();
+        // Check to make sure the key can be used...
+        let mut key_open = false;
+        let mut key_count = 0;
+        while !key_open {
+            println!("Remaining tries: {}", 3 - key_count);
+            if key_count == 3 {
+                break
+            }
+            match session.userauth_publickey_auto(None) {
+                Ok(_) => key_open = true,
+                Err(_) => print!("Password incorrect. ")
+            }
+            key_count += 1;
+        }
+        if !key_open {
+            return String::from("Failed to open key.");
+        }
         // Execute command on the remote machine...
         let mut s=session.channel_new().unwrap();
         s.open_session().unwrap();
