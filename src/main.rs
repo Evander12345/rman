@@ -1,11 +1,12 @@
 //! Provides CLI entry into rman.
+
 mod help;
 mod host;
 mod all;
 mod ssh_con;
-extern crate config;
 
 // Imports
+extern crate config;
 use std::env;
 
 /// Main method handles arguments supplied via CLI
@@ -21,7 +22,7 @@ fn main() {
             "host" | "h" => host::base(args),   // Execute a host command. TODO:Finish all commands.
             "all" | "a" => all::base(args),     // Execute an all command. TODO:Finish all commands
             "help" => help::base(args),         // Display rman commands.
-            _ => help::base(vec!(String::from(""))),
+            _ => help::base(vec!(String::new())),
         }
     }
     else {
