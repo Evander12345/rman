@@ -35,10 +35,10 @@ pub fn host() {
              "$rman host ls\tprints the host list and whether the host is up or not",
              "$rman host add [host-alias] [ssh-user] [ssh id file path] [ip] [*description]\tadds a host to the host list",
              "$rman host del [host-alias]\tremoves host from the host list",
-             "$rman host status [host]\tdisplays a detailed status view of a host",
-             "$rman host reboot [host]\treboots the host",
-             "$rman host shutdown [host]\tshutdowns the host",
-             "$rman host exec [host-alias] [cmd]\t execute an arbitrary command on the host.",
+             "$rman host status [host-alias]\tdisplays a detailed status view of a host",
+             "$rman host reboot [host-alias]\treboots the host",
+             "$rman host shutdown [host-alias]\tshutdowns the host",
+             "$rman host exec [host-alias] [cmd]\texecute an arbitrary command on the host.",
              "* denotes an optional argument."
     );
 }
