@@ -20,7 +20,7 @@ fn main() {
         match cmd {
             "status" | "s" => show_status(),    // Execute the status command.
             "host" | "h" => host::base(args),   // Execute a host command.
-            "all" | "a" => all::base(args),     // Execute an all command. 
+            "all" | "a" => all::base(args),     // Execute an all command.
             "help" => help::base(args),         // Display rman commands.
             _ => help::base(vec!(String::new())),
         }
