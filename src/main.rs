@@ -19,8 +19,8 @@ fn main() {
         let cmd: &str = &args[1];
         match cmd {
             "status" | "s" => show_status(),    // Execute the status command.
-            "host" | "h" => host::base(args),   // Execute a host command. TODO:Finish all commands.
-            "all" | "a" => all::base(args),     // Execute an all command. TODO:Finish all commands
+            "host" | "h" => host::base(args),   // Execute a host command.
+            "all" | "a" => all::base(args),     // Execute an all command. 
             "help" => help::base(args),         // Display rman commands.
             _ => help::base(vec!(String::new())),
         }
