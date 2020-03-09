@@ -1,18 +1,20 @@
 //! Provides the `Host` struct as well as some functions to interact utilize them.
+
 use crate::help;
 use crate::ssh_con;
 extern crate serde_derive;
 extern crate dirs;
-
 use config::Config;
 use serde_derive::{Serialize, Deserialize};
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use crate::ssh_con::{execute_remote_command, shutdown, reboot};
 
 /// Struct to store host data in aggregate while in mem.
 /// # Examples
+/// ```
 /// let host = Host {
 ///     alias: String::from("localhost"),                    // alias field denotes a nickname for the remote machine.
 ///     ip: String::from("127.0.0.1"),                       // ip field denotes the remote machines IP.
@@ -20,7 +22,7 @@ use std::path::Path;
 ///     pk_path: String::from("~/.ssh/localhost.pem"),       // pk_path denotes the path to the ssh private key.
 ///     description: String::from("An optional description") // description is an optional field to provide a short description of the remote machine.
 /// }
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+/// ```
 pub struct Host {
     pub alias: String,          // Host alias for reference purposes.
     pub ip: String,             // Remote machine's ip address.
@@ -30,7 +32,6 @@ pub struct Host {
 }
 
 /// Identical to `Host` except the fields should be given multiple `Host`'s concatenated together.
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
 pub struct Hosts {
     pub aliases: String,          // Host alias for reference purposes.
     pub ips: String,             // Remote machine's ip address.
@@ -39,7 +40,7 @@ pub struct Hosts {
     pub descriptions: String,    // Brief optional description of remote machine.
 }
 
-/// This function handles all `$rman host` commands.
+/// This function handles all `$rman host` cli commands.
 pub fn base(args: std::vec::Vec<String>) {
     if args.len() < 3 {
         // If the user does not specify a particular command to execute then print the host help message.
@@ -50,16 +51,51 @@ pub fn base(args: std::vec::Vec<String>) {
         let cmd: &str = &args[2];
         //println!("{}", cmd);
         match cmd {                             // Run various commands based on user input...
-            //"status" => host_status(),        // host "status"
+            "status" => host_status(args),          // host "status"
             "add" => save_host_runner(args),    // host "add"
             "del" => rm_host_runner(args),      // host "del"
             "ls" => list_hosts(),               // host "ls"
             "exec" => run_host_cmd(args),       // host "exec"
+            "reboot" => host_status(args),      // host "reboot"
+            "shutdown" => shutdown_host(args),  // host "shutdown"
             _ => help::host()                   // If the user typed something wrong then display the host help message
         }
     }
 }
 
+/// Reboot the target host.
+fn reboot_host(args: std::vec::Vec<String>) {
+    if args.len() < 5 {
+        let host = get_host_by_alias(args[3].to_string());
+        reboot(&host);
+    } else {
+        help::host();
+    }
+}
+
+/// Shutdown the target host.
+fn shutdown_host(args: std::vec::Vec<String>) {
+    if args.len() < 5 {
+        let host = get_host_by_alias(args[3].to_string());
+        shutdown(&host);
+    } else {
+        help::host();
+    }
+}
+
+/// Prints host uptime, disk usage, and various io statistics.
+fn host_status(args: std::vec::Vec<String>) {
+    if args.len() < 5 {
+        let host = get_host_by_alias(args[3].to_string());
+        println!("{}", execute_remote_command(&host, &String::from("uptime")));
+        println!("{}", execute_remote_command(&host, &String::from("df -h /")));
+        println!("{}", execute_remote_command(&host, &String::from("iostat | head -n 4")));
+    } else {
+        help::host();
+    }
+}
+
+/// Run a command on the target host.
 fn run_host_cmd(args: std::vec::Vec<String>) {
     // Assemble command
     let mut cmd = String::new();
@@ -80,7 +116,7 @@ fn list_hosts() {
     }
 }
 
-// Runs rm_host(<String>)
+/// Parse args and pass to `host::rm_host()`
 fn rm_host_runner(args: std::vec::Vec<String>) {
     // If the user has specified an alias to be removed then run the rm_host function with that alias. Else, display host help.
     match args.len() {
@@ -89,6 +125,7 @@ fn rm_host_runner(args: std::vec::Vec<String>) {
     }
 }
 
+/// Removes the target host from the configuration file.
 fn rm_host(rm_alias: String) {
     let mut hosts = get_hosts();
     let mut rm_indice:i32 = -1;
@@ -105,7 +142,7 @@ fn rm_host(rm_alias: String) {
     }
 }
 
-// Runs save_host(<Host>)
+/// Parse args and pass to `host::save_host()`
 fn save_host_runner(args: std::vec::Vec<String>) {
     // Check to make sure the user has specified all of the required fields.
     if args.len() < 6 {
@@ -158,6 +195,7 @@ fn save_host(to_save: Host) {
     try_save(configuration);
 }
 
+/// Attempt to save the configuration file.
 fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
     let mut path = match dirs::home_dir() {
         Some(buf) => buf,
@@ -173,7 +211,7 @@ fn try_save(configuration: std::vec::Vec<Host>) -> std::io::Result<()>{
     Ok(())
 }
 
-// Bundles hosts together into one <Hosts> which is identical to a <Host>
+/// Bundles hosts together into one `Hosts`
 fn bundle_hosts(to_hosts: std::vec::Vec<Host>) -> Hosts {
     let mut aliases = String::from("");
     let mut ips = String::from("");
@@ -206,7 +244,17 @@ fn bundle_hosts(to_hosts: std::vec::Vec<Host>) -> Hosts {
     }
 }
 
-// Attempts to get hosts from the configuration file.
+/// Loads hosts from the config file and into a `Vec<Host>`
+/// # Examples
+/// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
+pub fn get_hosts() -> std::vec::Vec<Host> {
+    match try_get_hosts() {
+        Ok(result) => result,
+        Err(err) => create_cfg()
+    }
+}
+
+/// Attempts to get hosts from the configuration file.
 fn try_get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
     let mut settings = Config::new();
     let mut path = match dirs::home_dir() {
@@ -232,42 +280,43 @@ fn try_get_hosts() -> Result<std::vec::Vec<Host>, Box<dyn Error>> {
             description: String::from(descs[i].clone()),
         });
     }
+
     Ok(r_hosts)
 }
 
-/// Loads hosts from the config file and into a `Vec<Host>`
+/// Gets a singular host by alias
 /// # Examples
-/// let hosts_as_vec std::vec::Vec<Host> = get_hosts();
-pub fn get_hosts() -> std::vec::Vec<Host> {
-    match try_get_hosts() {
-        Ok(result) => result,
-        Err(err) => panic!("Couldn't get hosts from config! {}", err)
-    }
-}
-
-pub fn get_host_by_alias(alias: String) -> Host {
+/// let localhost: Host = get_host_by_alias(String::from("localhost"));
+fn get_host_by_alias(alias: String) -> Host {
     let hosts = get_hosts();
-    let mut r_host: Host = Default::default();
-    // Check to see if the host exists
-    let mut exists: bool = false;
-    for host in hosts.iter() {
-        if alias == host.alias {
-            exists = true;
-            r_host = host.clone();
-        }
-    }
-    if exists {
-        r_host
-    } else {
-        panic!("Host not found.");
+    match hosts.into_iter().find(|host| host.alias == alias) {
+        Some(host) => host,
+        None => panic!("host not found.")
     }
 }
 
-// Converts a vec<str> to a vec<String>
+/// Converts a vec<str> to a vec<String>
 fn to_string_vec(as_an_str: std::vec::Vec<&str>) -> std::vec::Vec<String>  {
-    let mut r_vec = std::vec::Vec::new();
-    for elem in as_an_str.iter() {
-        r_vec.push(String::from(*elem))
+    as_an_str.into_iter().map(|elem| String::from(elem)).collect()
+}
+
+/// Creates a configuration file with filler host to prevent confy errors.
+fn create_cfg() -> std::vec::Vec<Host> {
+    match try_save(vec!(Host {
+        alias: "filler".to_string(),
+        ip: "filler".to_string(),
+        ssh_user: "filler".to_string(),
+        pk_path: "filler".to_string(),
+        description: "filler".to_string()
+    })) {
+        Ok(_) => println!("New configuration file created."),
+        Err(_) => panic!("Unable to create a configuration file.")
     }
-    r_vec
+    vec!(Host {
+        alias: "filler".to_string(),
+        ip: "filler".to_string(),
+        ssh_user: "filler".to_string(),
+        pk_path: "filler".to_string(),
+        description: "filler".to_string()
+    })
 }
