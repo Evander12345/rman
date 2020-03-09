@@ -1,8 +1,7 @@
-//! Provides remote command functionality for `Host` structs via SSH
+//! Provides remote command functionality for `Host` structs using the crate `ssh`
+
 use crate::host;
-
 extern crate ssh;
-
 use ssh::*;
 use std::path::Path;
 use std::io::Read;
@@ -26,13 +25,12 @@ pub fn execute_remote_command(host: &host::Host, remote_cmd: &String) -> String 
         let mut key_open = false;
         let mut key_count = 0;
         while !key_open {
-            println!("Remaining tries: {}", 3 - key_count);
             if key_count == 3 {
                 break
             }
             match session.userauth_publickey_auto(None) {
                 Ok(_) => key_open = true,
-                Err(_) => print!("Password incorrect. ")
+                Err(_) => println!("Password incorrect. Remaining tries: {}", 2 - key_count)
             }
             key_count += 1;
         }
@@ -73,4 +71,26 @@ pub fn check_host(host: &host::Host) -> bool {
     }
     std::mem::drop(session);
     connected
+}
+
+/// Checks if the ssh user has sudo privileges
+pub fn check_privs(host: &host::Host) -> bool {
+    let groups = execute_remote_command(host, &String::from("groups"));
+    groups.contains("sudo")
+}
+/// Reboot the target host
+pub fn reboot(host: &host::Host) {
+    if check_privs(host) {
+        execute_remote_command(host, &String::from("shutdown -r"));
+    } else {
+        println!("User lacks privileges to execute this command.");
+    }
+}
+/// Shutdown the target host
+pub fn shutdown(host: &host::Host) {
+    if check_privs(host) {
+        execute_remote_command(host, &String::from("shutdown"));
+    } else {
+        println!("User lacks privileges to execute this command.")
+    }
 }
