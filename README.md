@@ -3,11 +3,11 @@
 ## Installation
 **R**ust Server **Man**ager can be installed by running the following commands.
 
-`$git clone https://github.com/Evander12345/rman.git`
+`git clone https://github.com/Evander12345/rman.git`
 
 followed by
  
-`$cargo install --path=rman`
+`cargo install --path=rman`
  
 ## Usage
 #### Adding a host into the configuration file...
